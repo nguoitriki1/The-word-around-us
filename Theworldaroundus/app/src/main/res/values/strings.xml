@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">The world around us</string>
     <string name="title_activity_splash">SplashActivity</string>
+    <string name="world_around_us">World Around Us</string>
+    <string name="empty_result">Empty result!</string>
+    <string name="error">Error!</string>
 </resources>

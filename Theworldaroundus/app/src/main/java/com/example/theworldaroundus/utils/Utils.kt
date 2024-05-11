@@ -5,6 +5,8 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
 
+const val ACTION_BAR_SIZE_DP = 56
+
 enum class ScreenState {
     IDE, LOADING, SUCCESS, EMPTY, ERROR
 }
