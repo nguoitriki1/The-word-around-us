@@ -1,4 +1,4 @@
-package com.example.theworldaroundus
+package com.example.theworldaroundus.main
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -9,8 +9,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.flowWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.theworldaroundus.ui.theme.TheWorldAroundUsTheme
 
 class MainActivity : ComponentActivity() {
@@ -20,9 +23,9 @@ class MainActivity : ComponentActivity() {
         setContent {
             TheWorldAroundUsTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                            name = "Android",
-                            modifier = Modifier.padding(innerPadding)
+                    MainContent(
+                        modifier = Modifier.padding(innerPadding),
+                        viewModel = viewModel(factory = MainViewModelFactory()),
                     )
                 }
             }
@@ -31,17 +34,10 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-            text = "Hello $name!",
-            modifier = modifier
-    )
-}
+fun MainContent(modifier: Modifier = Modifier,viewModel: MainViewModel) {
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    TheWorldAroundUsTheme {
-        Greeting("Android")
-    }
+    val screenState = viewModel.screenState.collectAsState()
+    val itemCountries = viewModel.itemCountries.collectAsState()
+
+
 }

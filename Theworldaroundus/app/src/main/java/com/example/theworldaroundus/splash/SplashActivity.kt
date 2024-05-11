@@ -1,6 +1,7 @@
-package com.example.theworldaroundus
+package com.example.theworldaroundus.splash
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -10,9 +11,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.theworldaroundus.main.MainActivity
 import com.example.theworldaroundus.ui.theme.TheWorldAroundUsTheme
+import kotlinx.coroutines.delay
 
 @SuppressLint("CustomSplashScreen")
 class SplashActivity : ComponentActivity() {
@@ -22,7 +26,14 @@ class SplashActivity : ComponentActivity() {
         setContent {
             TheWorldAroundUsTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting2(
+
+                    LaunchedEffect(Unit) {
+                        delay(2000)
+                        startActivity(Intent(this@SplashActivity, MainActivity::class.java))
+                        finish()
+                    }
+
+                    SplashContent(
                         name = "Welcome to the World Around Us",
                         modifier = Modifier.padding(innerPadding)
                     )
@@ -33,7 +44,7 @@ class SplashActivity : ComponentActivity() {
 }
 
 @Composable
-fun Greeting2(name: String, modifier: Modifier = Modifier) {
+fun SplashContent(name: String, modifier: Modifier = Modifier) {
     Text(
         text = "$name!",
         modifier = modifier
@@ -44,6 +55,6 @@ fun Greeting2(name: String, modifier: Modifier = Modifier) {
 @Composable
 fun GreetingPreview2() {
     TheWorldAroundUsTheme {
-        Greeting2("Android")
+        SplashContent("Android")
     }
 }

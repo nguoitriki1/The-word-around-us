@@ -6,11 +6,15 @@ import com.example.theworldaroundus.api.RetrofitClient
 
 class BaseApplication : Application() {
 
-    private var apiService: ApiService? = null
-
     override fun onCreate() {
         super.onCreate()
+        application = this
         apiService = RetrofitClient.client?.create(ApiService::class.java)
+    }
+
+    companion object {
+        lateinit var application: Application
+        var apiService: ApiService? = null
     }
 
 }
