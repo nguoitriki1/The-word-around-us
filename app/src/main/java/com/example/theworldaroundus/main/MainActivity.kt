@@ -163,7 +163,7 @@ fun ContentSuccess(modifier: Modifier = Modifier, mainViewModel: MainViewModel) 
         items(itemCountries!!) { item ->
             Text(
                 modifier = Modifier.padding(top = 12.dp),
-                text = item.name.common,
+                text = item.name?.common ?: "",
                 style = Typography.titleMedium.copy(
                     color = WhiteColor, fontSize = 14.sp
                 ), fontWeight = FontWeight.Normal

@@ -7,8 +7,11 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.theworldaroundus.BaseApplication
 import com.example.theworldaroundus.data.Country
+import com.example.theworldaroundus.data.CountryDb
 import com.example.theworldaroundus.utils.ScreenState
 import com.example.theworldaroundus.utils.isInternetAvailable
+import com.example.theworldaroundus.utils.toCountry
+import com.example.theworldaroundus.utils.toCountryDb
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -67,18 +70,22 @@ class MainViewModel : ViewModel() {
         val countCountry = BaseApplication.database?.countryDao()?.getCountCountry()
 
         if (countCountry == null || countCountry == 0L) {
-            BaseApplication.database?.countryDao()?.insertCountries(countries)
+            BaseApplication.database?.countryDao()?.insertCountries(countries.map {
+                it.toCountryDb()
+            })
         }else{
             if (countries.size.toLong() != countCountry){
                 BaseApplication.database?.countryDao()?.deleteAllCountries()
-                BaseApplication.database?.countryDao()?.insertCountries(countries)
+                BaseApplication.database?.countryDao()?.insertCountries(countries.map {
+                    it.toCountryDb()
+                })
             }
         }
     }
 
     private suspend fun getLocaleCountries() {
         withContext(Dispatchers.IO) {
-            val items = BaseApplication.database?.countryDao()?.getAllCountry()
+            val items = BaseApplication.database?.countryDao()?.getAllCountry()?.map { it.toCountry() }
             setStateFromData(items)
         }
     }

@@ -4,6 +4,12 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
+import com.example.theworldaroundus.data.Country
+import com.example.theworldaroundus.data.CountryDb
+import com.example.theworldaroundus.data.Flags
+import com.example.theworldaroundus.data.Name
+import com.example.theworldaroundus.data.NativeName
+import com.example.theworldaroundus.data.RON
 
 const val ACTION_BAR_SIZE_DP = 56
 
@@ -33,4 +39,27 @@ fun isInternetAvailable(context: Context): Boolean {
             false
         }
     }
+}
+
+fun Country.toCountryDb(): CountryDb {
+    return CountryDb(
+        iconAlt = flags?.alt ?: "",
+        iconPng = flags?.png ?: "",
+        iconSvg = flags?.svg ?: "",
+        nameCommon = name?.common ?: "",
+        nameOfficial = name?.official,
+        nameNativeRonCommon = name?.nativeName?.ron?.common ?: "",
+        nameNativeRonOfficial = name?.nativeName?.ron?.official ?: ""
+    )
+}
+
+fun CountryDb.toCountry(): Country {
+    return Country(
+        flags = Flags(png = iconPng ?: "", svg = iconSvg ?: "", alt = iconAlt ?: ""),
+        name = Name(
+            common = nameCommon ?: "",
+            official = nameOfficial ?: "",
+            nativeName = NativeName(RON(nameNativeRonOfficial ?: "", nameNativeRonCommon ?: ""))
+        )
+    )
 }
