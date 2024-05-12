@@ -1,7 +1,6 @@
 package com.example.theworldaroundus.main
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -10,9 +9,11 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -31,35 +32,35 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.ImageLoader
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
-import coil.decode.SvgDecoder
 import com.example.theworldaroundus.R
 import com.example.theworldaroundus.data.Country
 import com.example.theworldaroundus.ui.theme.BackgroundColor
@@ -69,7 +70,6 @@ import com.example.theworldaroundus.ui.theme.WhiteColor
 import com.example.theworldaroundus.utils.ACTION_BAR_SIZE_DP
 import com.example.theworldaroundus.utils.ScreenState
 import com.example.theworldaroundus.utils.commonImageLoader
-import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -96,6 +96,18 @@ fun MainContent(modifier: Modifier = Modifier, viewModel: MainViewModel) {
 
     val screenState by viewModel.screenState.collectAsState()
 
+    var isShowSearch by remember {
+        mutableStateOf(false)
+    }
+
+    val textState = remember { mutableStateOf<TextFieldValue?>(null) }
+
+    LaunchedEffect(key1 = textState.value) {
+        textState.value?.let {
+            viewModel.loadCountries(it.text)
+        }
+    }
+
     Box(modifier = modifier) {
 
         BackgroundNet()
@@ -105,8 +117,16 @@ fun MainContent(modifier: Modifier = Modifier, viewModel: MainViewModel) {
             ActionBarMain(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(ACTION_BAR_SIZE_DP.dp)
+                    .height(ACTION_BAR_SIZE_DP.dp),
+                screenState = screenState,
+                onSearchClick = {
+                    isShowSearch = !isShowSearch
+                }
             )
+
+            SearchBar(textState.value,isShowSearch) {
+                textState.value = it
+            }
 
             Box(modifier = Modifier.weight(1f)) {
                 when (screenState) {
@@ -148,7 +168,11 @@ fun MainContent(modifier: Modifier = Modifier, viewModel: MainViewModel) {
 }
 
 @Composable
-fun ActionBarMain(modifier: Modifier = Modifier) {
+fun ActionBarMain(
+    modifier: Modifier = Modifier,
+    screenState: ScreenState,
+    onSearchClick: () -> Unit = {}
+) {
 
     Column(modifier = modifier) {
         Row(
@@ -165,6 +189,9 @@ fun ActionBarMain(modifier: Modifier = Modifier) {
                 contentScale = ContentScale.Inside
             )
             Text(
+                modifier = Modifier
+                    .wrapContentHeight()
+                    .weight(1f),
                 text = stringResource(R.string.world_around_us),
                 style = Typography.bodyLarge.copy(
                     color = WhiteColor,
@@ -172,6 +199,21 @@ fun ActionBarMain(modifier: Modifier = Modifier) {
                     fontWeight = FontWeight.Medium
                 )
             )
+            if (screenState == ScreenState.SUCCESS) {
+                Image(
+                    modifier = Modifier
+                        .padding(start = 8.dp, end = 16.dp)
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .clickable {
+                            onSearchClick()
+                        }
+                        .padding(12.dp),
+                    painter = rememberAsyncImagePainter(model = R.drawable.search_white_icon),
+                    contentDescription = "",
+                    contentScale = ContentScale.Inside
+                )
+            }
         }
 
         Spacer(
@@ -192,72 +234,91 @@ fun ActionBarMain(modifier: Modifier = Modifier) {
 fun ContentSuccess(
     modifier: Modifier = Modifier,
     mainViewModel: MainViewModel,
-    isShowSearch: Boolean = true
 ) {
 
     val itemCountries by mainViewModel.itemCountries.collectAsState()
 
     if (itemCountries.isNullOrEmpty()) return
 
-    val valueTextSearch = remember {
-        mutableStateOf("")
+    LazyColumn(
+        modifier = modifier.padding(top = 16.dp),
+        state = rememberLazyListState(),
+        contentPadding = PaddingValues(bottom = 16.dp, start = 16.dp, end = 16.dp)
+    ) {
+        items(itemCountries!!) { item ->
+
+            ContentItemCountry(item)
+
+            Spacer(modifier = Modifier.height(16.dp))
+        }
     }
 
-    Column(modifier = modifier.animateContentSize()) {
+}
 
-        AnimatedVisibility(visible = isShowSearch) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp)
-                    .clip(CircleShape)
-                    .background(color = WhiteColor),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Image(
-                    modifier = Modifier.width(24.dp),
-                    painter = rememberAsyncImagePainter(model = R.drawable.search_black_icon),
-                    contentDescription = "",
-                    contentScale = ContentScale.Inside
-                )
+@Composable
+private fun ColumnScope.SearchBar(
+    textFieldValue: TextFieldValue?,
+    isShowSearch: Boolean,
+    onValueSearchTextChange: (TextFieldValue?) -> Unit
+) {
 
-                TextField(
-                    modifier = Modifier
-                        .wrapContentHeight()
-                        .weight(1f),
-                    textStyle = Typography.titleMedium.copy(
-                        color = BackgroundColor, fontSize = 14.sp
-                    ),
-                    value = valueTextSearch.value,
-                    onValueChange = {
-                        valueTextSearch.value = it
-                    },
-                    maxLines = 1,
-                    colors = TextFieldDefaults.colors(
-                        disabledContainerColor = Color.Transparent,
-                        focusedContainerColor = Color.Transparent
-                    )
-                )
+    val focusRequester = remember {
+        FocusRequester()
+    }
 
-            }
+    AnimatedVisibility(visible = isShowSearch) {
+
+        LaunchedEffect(key1 = Unit) {
+            focusRequester.requestFocus()
         }
 
-        LazyColumn(
+        Row(
             modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .padding(top = 16.dp)
                 .fillMaxWidth()
-                .weight(1f),
-            state = rememberLazyListState(),
-            contentPadding = PaddingValues(all = 16.dp)
+                .height(48.dp)
+                .clip(CircleShape)
+                .background(color = WhiteColor),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            items(itemCountries!!) { item ->
+            Image(
+                modifier = Modifier
+                    .padding(start = 16.dp)
+                    .width(24.dp)
+                    .alpha(0.5f),
+                painter = rememberAsyncImagePainter(model = R.drawable.search_black_icon),
+                contentDescription = "",
+                contentScale = ContentScale.Inside
+            )
 
-                ContentItemCountry(item)
+            TextField(
+                modifier = Modifier
+                    .focusRequester(focusRequester)
+                    .wrapContentHeight()
+                    .weight(1f),
+                textStyle = Typography.bodyMedium.copy(
+                    color = BackgroundColor, fontSize = 16.sp
+                ),
+                value = textFieldValue?.text ?: "",
+                onValueChange = {
+                    onValueSearchTextChange( TextFieldValue(text = it, selection = TextRange(it.length)))
+                },
+                maxLines = 1,
+                colors = TextFieldDefaults.colors(
+                    disabledContainerColor = Color.Transparent,
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                    errorContainerColor = Color.Transparent,
+                    disabledIndicatorColor = Color.Transparent,
+                    focusedIndicatorColor = Color.Transparent,
+                    errorIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent
+                )
+            )
 
-                Spacer(modifier = Modifier.height(16.dp))
-            }
         }
     }
-
 }
 
 @Composable

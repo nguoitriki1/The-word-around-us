@@ -1,5 +1,6 @@
 package com.example.theworldaroundus.main
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -13,6 +14,7 @@ import com.example.theworldaroundus.utils.isInternetAvailable
 import com.example.theworldaroundus.utils.toCountry
 import com.example.theworldaroundus.utils.toCountryDb
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -35,6 +37,7 @@ class MainViewModelFactory : ViewModelProvider.Factory {
 
 class MainViewModel : ViewModel() {
     private val retrofitClient = BaseApplication.apiService
+    private var jobSearch: Job? = null
 
     val screenState = MutableStateFlow(ScreenState.IDE)
     val itemCountries = MutableStateFlow<List<Country>?>(null)
@@ -44,8 +47,9 @@ class MainViewModel : ViewModel() {
     }
 
 
-    private fun loadCountries() {
-        viewModelScope.launch(Dispatchers.IO) {
+    fun loadCountries(query: String = "") {
+        jobSearch?.cancel()
+        jobSearch = viewModelScope.launch(Dispatchers.IO) {
             screenState.value = ScreenState.LOADING
             var items: List<Country>?
             if (isInternetAvailable(BaseApplication.application)) {
@@ -57,15 +61,34 @@ class MainViewModel : ViewModel() {
                 items = getLocaleCountries()
             }
 
-            if (!items.isNullOrEmpty()) {
-                items = items.sortedBy {
-                    it.name?.common
-                }
-            }
+            items = searchItems(items, query)
+
+            items = sortItems(items)
 
             setStateFromData(items)
         }
 
+    }
+
+    private fun searchItems(items: List<Country>?, query: String = ""): List<Country>? {
+
+        if (query.isBlank()) return items
+
+        return if (!items.isNullOrEmpty()) {
+            items.filter { it.name?.common?.lowercase()?.contains(query.lowercase()) == true }
+        } else {
+            items
+        }
+    }
+
+    private fun sortItems(items: List<Country>?): List<Country>? {
+        return if (!items.isNullOrEmpty()) {
+            items.sortedBy {
+                it.name?.common
+            }
+        } else {
+            items
+        }
     }
 
     private suspend fun dataSynchronizationWithDatabase(items: List<Country>?) {
