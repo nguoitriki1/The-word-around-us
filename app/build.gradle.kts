@@ -62,7 +62,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.coil.compose)
     implementation(libs.androidx.room.runtime)
-//    implementation(libs.androidx.room.compiler)
+    ksp(libs.androidx.room.compiler)
     testImplementation(libs.junit)
     annotationProcessor(libs.androidx.room.compiler)
     androidTestImplementation(libs.androidx.junit)

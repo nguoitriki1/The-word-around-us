@@ -12,7 +12,7 @@ retrofitVersion = "2.11.0"
 lifecycleViewmodelCompose = "2.7.0"
 coilCompose = "2.6.0"
 roomRuntime = "2.6.1"
-kspVersion = "1.9.24-1.0.20"
+kspVersion = "1.9.0-1.0.13"
 roomCompiler = "2.6.1"
 
 [libraries]
