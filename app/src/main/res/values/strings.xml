@@ -4,4 +4,5 @@
     <string name="world_around_us">World Around Us</string>
     <string name="empty_result">Empty result!</string>
     <string name="error">Error!</string>
+    <string name="welcome_to_the_world_around_us">Welcome to the World Around Us</string>
 </resources>
