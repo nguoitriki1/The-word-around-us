@@ -5,6 +5,8 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -20,6 +22,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -27,7 +31,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldColors
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
@@ -42,6 +50,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -180,22 +189,72 @@ fun ActionBarMain(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun ContentSuccess(modifier: Modifier = Modifier, mainViewModel: MainViewModel) {
+fun ContentSuccess(
+    modifier: Modifier = Modifier,
+    mainViewModel: MainViewModel,
+    isShowSearch: Boolean = true
+) {
 
     val itemCountries by mainViewModel.itemCountries.collectAsState()
 
     if (itemCountries.isNullOrEmpty()) return
 
-    LazyColumn(
-        modifier = modifier,
-        state = rememberLazyListState(),
-        contentPadding = PaddingValues(all = 16.dp)
-    ) {
-        items(itemCountries!!) { item ->
+    val valueTextSearch = remember {
+        mutableStateOf("")
+    }
 
-            ContentItemCountry(item)
+    Column(modifier = modifier.animateContentSize()) {
 
-            Spacer(modifier = Modifier.height(16.dp))
+        AnimatedVisibility(visible = isShowSearch) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
+                    .clip(CircleShape)
+                    .background(color = WhiteColor),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Image(
+                    modifier = Modifier.width(24.dp),
+                    painter = rememberAsyncImagePainter(model = R.drawable.search_black_icon),
+                    contentDescription = "",
+                    contentScale = ContentScale.Inside
+                )
+
+                TextField(
+                    modifier = Modifier
+                        .wrapContentHeight()
+                        .weight(1f),
+                    textStyle = Typography.titleMedium.copy(
+                        color = BackgroundColor, fontSize = 14.sp
+                    ),
+                    value = valueTextSearch.value,
+                    onValueChange = {
+                        valueTextSearch.value = it
+                    },
+                    maxLines = 1,
+                    colors = TextFieldDefaults.colors(
+                        disabledContainerColor = Color.Transparent,
+                        focusedContainerColor = Color.Transparent
+                    )
+                )
+
+            }
+        }
+
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f),
+            state = rememberLazyListState(),
+            contentPadding = PaddingValues(all = 16.dp)
+        ) {
+            items(itemCountries!!) { item ->
+
+                ContentItemCountry(item)
+
+                Spacer(modifier = Modifier.height(16.dp))
+            }
         }
     }
 
@@ -242,7 +301,7 @@ fun ContentItemCountry(item: Country) {
                 overflow = TextOverflow.Ellipsis
             )
 
-            if (!item.flags?.alt.isNullOrBlank()){
+            if (!item.flags?.alt.isNullOrBlank()) {
                 Text(
                     modifier = Modifier
                         .fillMaxWidth(),
