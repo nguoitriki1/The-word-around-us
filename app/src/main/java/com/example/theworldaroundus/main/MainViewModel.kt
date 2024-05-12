@@ -45,21 +45,25 @@ class MainViewModel : ViewModel() {
 
 
     private fun loadCountries() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             screenState.value = ScreenState.LOADING
+            var items: List<Country>?
             if (isInternetAvailable(BaseApplication.application)) {
-                withContext(Dispatchers.IO) {
-                    val items = withTimeout(10000) {
-                        callApiGetCountries()
-                    }
-
-                    dataSynchronizationWithDatabase(items)
-
-                    setStateFromData(items)
+                items = withTimeout(10000) {
+                    callApiGetCountries()
                 }
+                dataSynchronizationWithDatabase(items)
             } else {
-                getLocaleCountries()
+                items = getLocaleCountries()
             }
+
+            if (!items.isNullOrEmpty()) {
+                items = items.sortedBy {
+                    it.name?.common
+                }
+            }
+
+            setStateFromData(items)
         }
 
     }
@@ -73,8 +77,8 @@ class MainViewModel : ViewModel() {
             BaseApplication.database?.countryDao()?.insertCountries(countries.map {
                 it.toCountryDb()
             })
-        }else{
-            if (countries.size.toLong() != countCountry){
+        } else {
+            if (countries.size.toLong() != countCountry) {
                 BaseApplication.database?.countryDao()?.deleteAllCountries()
                 BaseApplication.database?.countryDao()?.insertCountries(countries.map {
                     it.toCountryDb()
@@ -83,11 +87,8 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    private suspend fun getLocaleCountries() {
-        withContext(Dispatchers.IO) {
-            val items = BaseApplication.database?.countryDao()?.getAllCountry()?.map { it.toCountry() }
-            setStateFromData(items)
-        }
+    private suspend fun getLocaleCountries(): List<Country>? {
+        return BaseApplication.database?.countryDao()?.getAllCountry()?.map { it.toCountry() }
     }
 
     private suspend fun callApiGetCountries() =
@@ -118,19 +119,16 @@ class MainViewModel : ViewModel() {
             })
         }
 
-    private suspend fun setStateFromData(items: List<Country>?) {
-        withContext(Dispatchers.Main) {
-            if (items == null) {
-                itemCountries.value = null
-                screenState.value = ScreenState.ERROR
-            } else if (items.isEmpty()) {
-                itemCountries.value = null
-                screenState.value = ScreenState.EMPTY
-            } else {
-                itemCountries.value = items
-                screenState.value = ScreenState.SUCCESS
-            }
+    private fun setStateFromData(items: List<Country>?) {
+        if (items == null) {
+            itemCountries.value = null
+            screenState.value = ScreenState.ERROR
+        } else if (items.isEmpty()) {
+            itemCountries.value = null
+            screenState.value = ScreenState.EMPTY
+        } else {
+            itemCountries.value = items
+            screenState.value = ScreenState.SUCCESS
         }
     }
-
 }

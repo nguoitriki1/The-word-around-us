@@ -4,6 +4,9 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
+import coil.ImageLoader
+import coil.decode.SvgDecoder
+import com.example.theworldaroundus.BaseApplication
 import com.example.theworldaroundus.data.Country
 import com.example.theworldaroundus.data.CountryDb
 import com.example.theworldaroundus.data.Flags
@@ -16,6 +19,10 @@ const val ACTION_BAR_SIZE_DP = 56
 enum class ScreenState {
     IDE, LOADING, SUCCESS, EMPTY, ERROR
 }
+
+val commonImageLoader =  ImageLoader.Builder(BaseApplication.application).components {
+    add(SvgDecoder.Factory())
+}.build()
 
 @Suppress("DEPRECATION")
 fun isInternetAvailable(context: Context): Boolean {
@@ -43,10 +50,10 @@ fun isInternetAvailable(context: Context): Boolean {
 
 fun Country.toCountryDb(): CountryDb {
     return CountryDb(
-        iconAlt = flags?.alt ?: "",
-        iconPng = flags?.png ?: "",
-        iconSvg = flags?.svg ?: "",
-        nameCommon = name?.common ?: "",
+        iconAlt = flags?.alt,
+        iconPng = flags?.png,
+        iconSvg = flags?.svg,
+        nameCommon = name?.common ?: "unknown",
         nameOfficial = name?.official,
         nameNativeRonCommon = name?.nativeName?.ron?.common ?: "",
         nameNativeRonOfficial = name?.nativeName?.ron?.official ?: ""
@@ -55,11 +62,11 @@ fun Country.toCountryDb(): CountryDb {
 
 fun CountryDb.toCountry(): Country {
     return Country(
-        flags = Flags(png = iconPng ?: "", svg = iconSvg ?: "", alt = iconAlt ?: ""),
+        flags = Flags(png = iconPng, svg = iconSvg, alt = iconAlt),
         name = Name(
-            common = nameCommon ?: "",
-            official = nameOfficial ?: "",
-            nativeName = NativeName(RON(nameNativeRonOfficial ?: "", nameNativeRonCommon ?: ""))
+            common = nameCommon,
+            official = nameOfficial,
+            nativeName = NativeName(RON(nameNativeRonOfficial, nameNativeRonCommon))
         )
     )
 }
