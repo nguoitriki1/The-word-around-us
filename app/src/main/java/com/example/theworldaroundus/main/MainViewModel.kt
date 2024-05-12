@@ -50,19 +50,37 @@ class MainViewModel : ViewModel() {
                         callApiGetCountries()
                     }
 
-                    if (items == null) {
-                        screenState.value = ScreenState.ERROR
-                    } else if (items.isEmpty()) {
-                        screenState.value = ScreenState.EMPTY
-                    } else {
-                        screenState.value = ScreenState.SUCCESS
-                    }
+                    dataSynchronizationWithDatabase(items)
+
+                    setStateFromData(items)
                 }
             } else {
-                //TODO
+                getLocaleCountries()
             }
         }
 
+    }
+
+    private suspend fun dataSynchronizationWithDatabase(items: List<Country>?) {
+        val countries = items ?: return
+
+        val countCountry = BaseApplication.database?.countryDao()?.getCountCountry()
+
+        if (countCountry == null || countCountry == 0L) {
+            BaseApplication.database?.countryDao()?.insertCountries(countries)
+        }else{
+            if (countries.size.toLong() != countCountry){
+                BaseApplication.database?.countryDao()?.deleteAllCountries()
+                BaseApplication.database?.countryDao()?.insertCountries(countries)
+            }
+        }
+    }
+
+    private suspend fun getLocaleCountries() {
+        withContext(Dispatchers.IO) {
+            val items = BaseApplication.database?.countryDao()?.getAllCountry()
+            setStateFromData(items)
+        }
     }
 
     private suspend fun callApiGetCountries() =
@@ -92,5 +110,20 @@ class MainViewModel : ViewModel() {
 
             })
         }
+
+    private suspend fun setStateFromData(items: List<Country>?) {
+        withContext(Dispatchers.Main) {
+            if (items == null) {
+                itemCountries.value = null
+                screenState.value = ScreenState.ERROR
+            } else if (items.isEmpty()) {
+                itemCountries.value = null
+                screenState.value = ScreenState.EMPTY
+            } else {
+                itemCountries.value = items
+                screenState.value = ScreenState.SUCCESS
+            }
+        }
+    }
 
 }

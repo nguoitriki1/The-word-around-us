@@ -1,7 +1,8 @@
 package com.example.theworldaroundus.data
 
+import androidx.room.Entity
 import com.google.gson.annotations.SerializedName
-
+@Entity(tableName = "country", primaryKeys = ["name"])
 data class Country(
    @SerializedName("flags") val flags: Flags,
    @SerializedName("name") val name: Name

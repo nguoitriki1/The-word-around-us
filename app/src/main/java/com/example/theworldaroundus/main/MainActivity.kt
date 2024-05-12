@@ -6,10 +6,12 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -84,7 +86,7 @@ fun MainContent(modifier: Modifier = Modifier, viewModel: MainViewModel) {
                 when (screenState) {
                     ScreenState.IDE -> {}
                     ScreenState.LOADING -> {
-                        ContentLoading()
+                        ContentLoading(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.5f))
                     }
 
                     ScreenState.SUCCESS -> {
@@ -92,11 +94,11 @@ fun MainContent(modifier: Modifier = Modifier, viewModel: MainViewModel) {
                     }
 
                     ScreenState.EMPTY -> {
-                        ContentEmpty()
+                        ContentEmpty(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.5f))
                     }
 
                     ScreenState.ERROR -> {
-                        ContentError()
+                        ContentError(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.5f))
                     }
                 }
 
@@ -130,7 +132,7 @@ fun ActionBarMain(modifier: Modifier = Modifier) {
                 text = stringResource(R.string.world_around_us),
                 style = Typography.bodyLarge.copy(
                     color = WhiteColor,
-                    fontSize = 14.sp,
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.Medium
                 )
             )
@@ -173,7 +175,7 @@ fun ContentSuccess(modifier: Modifier = Modifier, mainViewModel: MainViewModel) 
 
 @Composable
 fun ContentEmpty(modifier: Modifier = Modifier) {
-    Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
         Image(
             painter = painterResource(id = R.drawable.empty_icon),
             contentDescription = "",
@@ -193,7 +195,7 @@ fun ContentEmpty(modifier: Modifier = Modifier) {
 
 @Composable
 fun ContentError(modifier: Modifier = Modifier) {
-    Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
         Image(
             painter = painterResource(id = R.drawable.error_icon),
             contentDescription = "",
