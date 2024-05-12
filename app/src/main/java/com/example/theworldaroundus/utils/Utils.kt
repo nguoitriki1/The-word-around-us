@@ -13,6 +13,7 @@ import com.example.theworldaroundus.data.Flags
 import com.example.theworldaroundus.data.Name
 import com.example.theworldaroundus.data.NativeName
 import com.example.theworldaroundus.data.RON
+import com.google.gson.Gson
 
 const val ACTION_BAR_SIZE_DP = 56
 
@@ -20,7 +21,7 @@ enum class ScreenState {
     IDE, LOADING, SUCCESS, EMPTY, ERROR
 }
 
-val commonImageLoader =  ImageLoader.Builder(BaseApplication.application).components {
+val commonImageLoader = ImageLoader.Builder(BaseApplication.application).components {
     add(SvgDecoder.Factory())
 }.build()
 
@@ -69,4 +70,19 @@ fun CountryDb.toCountry(): Country {
             nativeName = NativeName(RON(nameNativeRonOfficial, nameNativeRonCommon))
         )
     )
+}
+
+fun Country.toJson(): String {
+    return Gson().toJson(this)
+}
+
+fun String.toCountry(): Country? {
+
+    if (this.isBlank()) return null
+
+    try {
+        return Gson().fromJson(this, Country::class.java)
+    }catch (e : Exception){
+        return null
+    }
 }
