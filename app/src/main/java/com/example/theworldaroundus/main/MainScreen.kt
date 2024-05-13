@@ -92,7 +92,7 @@ fun MainContent(modifier: Modifier = Modifier, viewModel: MainViewModel, onOpenD
 
     LaunchedEffect(key1 = textState.value) {
         textState.value?.let {
-            viewModel.loadCountries(it.text)
+            viewModel.searchItems(it.text)
         }
     }
 
@@ -112,9 +112,11 @@ fun MainContent(modifier: Modifier = Modifier, viewModel: MainViewModel, onOpenD
                 }
             )
 
-            SearchBar(textState.value, isShowSearch) {
+            SearchBar(textState.value, isShowSearch, onClearSearch = {
+                viewModel.clearSearch()
+            }, onValueSearchTextChange = {
                 textState.value = it
-            }
+            })
 
             Box(modifier = Modifier.weight(1f)) {
                 when (screenState) {
@@ -250,7 +252,8 @@ fun ContentSuccess(
 private fun ColumnScope.SearchBar(
     textFieldValue: TextFieldValue?,
     isShowSearch: Boolean,
-    onValueSearchTextChange: (TextFieldValue?) -> Unit
+    onValueSearchTextChange: (TextFieldValue?) -> Unit,
+    onClearSearch: () -> Unit
 ) {
 
     val focusRequester = remember {
@@ -311,6 +314,18 @@ private fun ColumnScope.SearchBar(
                     errorIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent
                 )
+            )
+
+            Image(
+                modifier = Modifier
+                    .padding(end = 16.dp)
+                    .width(24.dp)
+                    .alpha(0.5f).clickable {
+                        onClearSearch()
+                    },
+                painter = rememberAsyncImagePainter(model = R.drawable.search_black_icon),
+                contentDescription = "",
+                contentScale = ContentScale.Inside
             )
 
         }

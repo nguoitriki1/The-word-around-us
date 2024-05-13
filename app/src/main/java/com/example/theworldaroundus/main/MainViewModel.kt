@@ -35,6 +35,7 @@ class MainViewModelFactory : ViewModelProvider.Factory {
 class MainViewModel : ViewModel() {
     private val retrofitClient = BaseApplication.apiService
     private var jobSearch: Job? = null
+    private var cacheItemsLoaded: List<Country>? = null
 
     val screenState = MutableStateFlow(ScreenState.IDE)
     val itemCountries = MutableStateFlow<List<Country>?>(null)
@@ -43,8 +44,7 @@ class MainViewModel : ViewModel() {
         loadCountries()
     }
 
-
-    fun loadCountries(query: String = "") {
+    private fun loadCountries() {
         jobSearch?.cancel()
         jobSearch = viewModelScope.launch(Dispatchers.IO) {
             screenState.value = ScreenState.LOADING
@@ -58,24 +58,34 @@ class MainViewModel : ViewModel() {
                 items = getLocaleCountries()
             }
 
-            items = searchItems(items, query)
-
             items = sortItems(items)
+
+            cacheItemsLoaded = items
 
             setStateFromData(items)
         }
 
     }
 
-    private fun searchItems(items: List<Country>?, query: String = ""): List<Country>? {
 
-        if (query.isBlank()) return items
+    fun searchItems(query: String = "") {
+        if (cacheItemsLoaded == null) return
 
-        return if (!items.isNullOrEmpty()) {
-            items.filter { it.name?.common?.lowercase()?.contains(query.lowercase()) == true }
-        } else {
-            items
+        var newItems = if (query.isBlank()){
+            cacheItemsLoaded
+        }else{
+           if (!cacheItemsLoaded.isNullOrEmpty()) {
+                cacheItemsLoaded?.filter {
+                    it.name?.common?.lowercase()?.contains(query.lowercase()) == true
+                } ?: emptyList()
+            } else {
+                cacheItemsLoaded
+            }
         }
+
+        newItems = sortItems(newItems)
+
+        setStateFromData(newItems)
     }
 
     private fun sortItems(items: List<Country>?): List<Country>? {
@@ -150,5 +160,8 @@ class MainViewModel : ViewModel() {
             itemCountries.value = items
             screenState.value = ScreenState.SUCCESS
         }
+    }
+
+    fun clearSearch() {
     }
 }

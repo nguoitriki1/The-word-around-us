@@ -42,7 +42,7 @@ class SplashActivity : ComponentActivity() {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
 
                     LaunchedEffect(Unit) {
-                        delay(10000)
+                        delay(2000)
                         startActivity(Intent(this@SplashActivity, MainActivity::class.java))
                         finish()
                     }
