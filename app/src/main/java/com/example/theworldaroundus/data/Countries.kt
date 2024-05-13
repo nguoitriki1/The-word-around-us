@@ -3,6 +3,8 @@ package com.example.theworldaroundus.data
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
+import com.google.gson.internal.LinkedTreeMap
+import org.json.JSONObject
 
 @Entity(tableName = "country", primaryKeys = ["nameCommon"])
 data class CountryDb(
@@ -11,8 +13,7 @@ data class CountryDb(
     val iconAlt: String?,
     val nameCommon: String,
     val nameOfficial: String?,
-    val nameNativeRonCommon: String?,
-    val nameNativeRonOfficial: String?,
+    val nameNativeName: String?
 )
 
 data class Country(
@@ -29,14 +30,5 @@ data class Flags(
 data class Name(
     @SerializedName("common") val common: String?,
     @SerializedName("official") val official: String?,
-    @SerializedName("nativeName") val nativeName: NativeName?
-)
-
-data class NativeName(
-    @SerializedName("ron") val ron: RON?
-)
-
-data class RON(
-    @SerializedName("official") val official: String?,
-    @SerializedName("common") val common: String?
+    @SerializedName("nativeName") val nativeName: Map<String, Map<String, String>>?
 )

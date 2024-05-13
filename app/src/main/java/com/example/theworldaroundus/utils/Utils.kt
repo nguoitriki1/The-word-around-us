@@ -11,9 +11,8 @@ import com.example.theworldaroundus.data.Country
 import com.example.theworldaroundus.data.CountryDb
 import com.example.theworldaroundus.data.Flags
 import com.example.theworldaroundus.data.Name
-import com.example.theworldaroundus.data.NativeName
-import com.example.theworldaroundus.data.RON
 import com.google.gson.Gson
+import org.json.JSONObject
 
 const val ACTION_BAR_SIZE_DP = 56
 
@@ -56,8 +55,7 @@ fun Country.toCountryDb(): CountryDb {
         iconSvg = flags?.svg,
         nameCommon = name?.common ?: "unknown",
         nameOfficial = name?.official,
-        nameNativeRonCommon = name?.nativeName?.ron?.common ?: "",
-        nameNativeRonOfficial = name?.nativeName?.ron?.official ?: ""
+        nameNativeName = nativeNameToJson(this.name?.nativeName)
     )
 }
 
@@ -67,7 +65,7 @@ fun CountryDb.toCountry(): Country {
         name = Name(
             common = nameCommon,
             official = nameOfficial,
-            nativeName = NativeName(RON(nameNativeRonOfficial, nameNativeRonCommon))
+            nativeName = jsonToNativeName(this.nameNativeName)
         )
     )
 }
@@ -80,9 +78,42 @@ fun String.toCountry(): Country? {
 
     if (this.isBlank()) return null
 
-    try {
-        return Gson().fromJson(this, Country::class.java)
+    return try {
+        Gson().fromJson(this, Country::class.java)
     }catch (e : Exception){
-        return null
+        null
     }
+}
+
+fun nativeNameToJson(map: Map<String, Map<String, String>>?): String {
+
+    if (map == null) return ""
+
+    val jsonObject = JSONObject()
+    for ((key, innerMap) in map) {
+        val innerJsonObject = JSONObject(innerMap)
+        jsonObject.put(key, innerJsonObject)
+    }
+    return jsonObject.toString()
+}
+
+fun jsonToNativeName(jsonString: String?): Map<String, Map<String, String>>? {
+    if (jsonString.isNullOrBlank()) return null
+
+    val jsonObject = JSONObject(jsonString)
+    val resultMap = mutableMapOf<String, Map<String, String>>()
+    val keys = jsonObject.keys()
+    while (keys.hasNext()) {
+        val key = keys.next()
+        val innerJson = jsonObject.getJSONObject(key)
+        val innerMap = mutableMapOf<String, String>()
+        val innerKeys = innerJson.keys()
+        while (innerKeys.hasNext()) {
+            val innerKey = innerKeys.next()
+            val innerValue = innerJson.getString(innerKey)
+            innerMap[innerKey] = innerValue
+        }
+        resultMap[key] = innerMap
+    }
+    return resultMap
 }

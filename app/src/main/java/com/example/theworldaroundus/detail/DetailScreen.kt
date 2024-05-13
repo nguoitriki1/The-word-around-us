@@ -1,6 +1,5 @@
 package com.example.theworldaroundus.detail
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -24,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -34,6 +34,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.theworldaroundus.R
 import com.example.theworldaroundus.data.Country
 import com.example.theworldaroundus.ui.theme.BackgroundColor
+import com.example.theworldaroundus.ui.theme.PurpleColor9167DB
 import com.example.theworldaroundus.ui.theme.Typography
 import com.example.theworldaroundus.ui.theme.WhiteColor
 
@@ -42,7 +43,6 @@ fun DetailScreen(
     country: Country?,
     onBackClick: () -> Unit
 ) {
-    Log.d("abc", "country name : ${country?.name}")
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = BackgroundColor
@@ -81,24 +81,46 @@ fun DetailScreen(
                         contentDescription = "",
                         contentScale = ContentScale.FillHeight
                     )
-                    ContentCountryDetail(R.string.common_name, country?.name?.common ?: "")
-
-                    ContentCountryDetail(R.string.description, country?.flags?.alt ?: "")
-
-                    ContentCountryDetail(R.string.url_flags_png, country?.flags?.png ?: "")
-
-                    ContentCountryDetail(R.string.url_flags_svg, country?.flags?.svg ?: "")
-
                     ContentCountryDetail(
-                        R.string.native_name_common,
-                        country?.name?.nativeName?.ron?.common ?: ""
-                    )
-                    ContentCountryDetail(
-                        R.string.native_name_offical,
-                        country?.name?.nativeName?.ron?.official ?: ""
+                        title = stringResource(id = R.string.common_name),
+                        info = country?.name?.common ?: ""
                     )
 
+                    ContentCountryDetail(
+                        title = stringResource(id = R.string.description),
+                        info = country?.flags?.alt ?: ""
+                    )
 
+                    ContentCountryDetail(
+                        title = stringResource(id = R.string.url_flags_png),
+                        info = country?.flags?.png ?: ""
+                    )
+
+                    ContentCountryDetail(
+                        title = stringResource(id = R.string.url_flags_svg),
+                        info = country?.flags?.svg ?: ""
+                    )
+
+                    val nativeName = country?.name?.nativeName ?: return@Scaffold
+
+                    nativeName.keys.forEach {
+                        Column {
+                            Text(
+                                modifier = Modifier
+                                    .padding(vertical = 8.dp)
+                                    .fillMaxWidth(),
+                                text = it,
+                                style = Typography.bodyLarge.copy(
+                                    color = Color.Red,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            )
+                            nativeName[it]?.forEach {
+                                ContentCountryDetail(it.key, it.value)
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -106,7 +128,7 @@ fun DetailScreen(
 }
 
 @Composable
-private fun ContentCountryDetail(title: Int = R.string.common_name, info: String) {
+private fun ContentCountryDetail(title: String, info: String) {
     Row(
         modifier = Modifier
             .padding(vertical = 8.dp)
@@ -116,11 +138,11 @@ private fun ContentCountryDetail(title: Int = R.string.common_name, info: String
             modifier = Modifier
                 .wrapContentHeight()
                 .weight(1f),
-            text = stringResource(title),
+            text = title,
             style = Typography.bodyLarge.copy(
-                color = BackgroundColor,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium
+                color = PurpleColor9167DB,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold
             )
         )
 
@@ -131,8 +153,8 @@ private fun ContentCountryDetail(title: Int = R.string.common_name, info: String
             text = info,
             style = Typography.bodyLarge.copy(
                 color = BackgroundColor,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Normal
             ),
         )
     }
