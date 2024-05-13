@@ -5,4 +5,10 @@
     <string name="empty_result">Empty result!</string>
     <string name="error">Error!</string>
     <string name="welcome_to_the_world_around_us">Welcome to the World Around Us</string>
+    <string name="common_name">"Country name : "</string>
+    <string name="description">Description : </string>
+    <string name="url_flags_png">"Url flags (png) : "</string>
+    <string name="url_flags_svg">"Url flags (svg) : "</string>
+    <string name="native_name_common">"Native name common : "</string>
+    <string name="native_name_offical">"Native name official : "</string>
 </resources>
