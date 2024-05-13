@@ -161,7 +161,4 @@ class MainViewModel : ViewModel() {
             screenState.value = ScreenState.SUCCESS
         }
     }
-
-    fun clearSearch() {
-    }
 }

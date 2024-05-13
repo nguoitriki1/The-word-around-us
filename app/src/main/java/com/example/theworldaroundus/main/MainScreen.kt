@@ -66,7 +66,7 @@ import com.example.theworldaroundus.utils.ScreenState
 import com.example.theworldaroundus.utils.commonImageLoader
 
 @Composable
-fun MainScreen(onOpenDetail : (Country) -> Unit = {}) {
+fun MainScreen(onOpenDetail: (Country) -> Unit = {}) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = BackgroundColor
@@ -80,7 +80,11 @@ fun MainScreen(onOpenDetail : (Country) -> Unit = {}) {
 }
 
 @Composable
-fun MainContent(modifier: Modifier = Modifier, viewModel: MainViewModel, onOpenDetail : (Country) -> Unit = {}) {
+fun MainContent(
+    modifier: Modifier = Modifier,
+    viewModel: MainViewModel,
+    onOpenDetail: (Country) -> Unit = {}
+) {
 
     val screenState by viewModel.screenState.collectAsState()
 
@@ -113,7 +117,7 @@ fun MainContent(modifier: Modifier = Modifier, viewModel: MainViewModel, onOpenD
             )
 
             SearchBar(textState.value, isShowSearch, onClearSearch = {
-                viewModel.clearSearch()
+                textState.value = TextFieldValue("")
             }, onValueSearchTextChange = {
                 textState.value = it
             })
@@ -224,7 +228,7 @@ fun ActionBarMain(
 fun ContentSuccess(
     modifier: Modifier = Modifier,
     mainViewModel: MainViewModel,
-    onOpenDetail : (Country) -> Unit = {}
+    onOpenDetail: (Country) -> Unit = {}
 ) {
 
     val itemCountries by mainViewModel.itemCountries.collectAsState()
@@ -236,9 +240,9 @@ fun ContentSuccess(
         state = rememberLazyListState(),
         contentPadding = PaddingValues(bottom = 16.dp, start = 16.dp, end = 16.dp)
     ) {
-        items(itemCountries!!) { item ->
+        items(itemCountries ?: emptyList()) { item ->
 
-            ContentItemCountry(item){
+            ContentItemCountry(item) {
                 onOpenDetail(item)
             }
 
@@ -316,24 +320,27 @@ private fun ColumnScope.SearchBar(
                 )
             )
 
-            Image(
-                modifier = Modifier
-                    .padding(end = 16.dp)
-                    .width(24.dp)
-                    .alpha(0.5f).clickable {
-                        onClearSearch()
-                    },
-                painter = rememberAsyncImagePainter(model = R.drawable.search_black_icon),
-                contentDescription = "",
-                contentScale = ContentScale.Inside
-            )
+            if (!textFieldValue?.text.isNullOrBlank())
+                Image(
+                    modifier = Modifier
+                        .padding(end = 16.dp)
+                        .width(40.dp)
+                        .alpha(0.5f)
+                        .clip(CircleShape)
+                        .clickable {
+                            onClearSearch()
+                        }.padding(12.dp),
+                    painter = rememberAsyncImagePainter(model = R.drawable.renew_icon),
+                    contentDescription = "",
+                    contentScale = ContentScale.Inside
+                )
 
         }
     }
 }
 
 @Composable
-fun ContentItemCountry(item: Country, onClickItem : () -> Unit = {}) {
+fun ContentItemCountry(item: Country, onClickItem: () -> Unit = {}) {
 
     Row(
         modifier = Modifier
