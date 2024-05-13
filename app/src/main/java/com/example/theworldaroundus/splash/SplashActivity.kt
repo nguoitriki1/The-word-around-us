@@ -42,16 +42,17 @@ class SplashActivity : ComponentActivity() {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
 
                     LaunchedEffect(Unit) {
-                        delay(2000)
+                        delay(10000)
                         startActivity(Intent(this@SplashActivity, MainActivity::class.java))
                         finish()
                     }
 
                     Box(modifier = Modifier.fillMaxSize()) {
                         Image(
+                            modifier = Modifier.fillMaxSize(),
                             painter = rememberAsyncImagePainter(model = R.drawable.background_splash),
                             contentDescription = "",
-                            contentScale = ContentScale.FillBounds
+                            contentScale = ContentScale.FillHeight
                         )
 
                         Text(
